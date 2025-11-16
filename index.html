@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andreas One-Pager</title>
+    
+    <!-- Google Fonts importieren: Poppins (für Menü/Inhalt) und Baskervville (für Hintergrund) --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baskervville:wght@700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Globale Einstellungen --- */
+        html {
+            /* WICHTIG: scroll-behavior: smooth; wurde entfernt, um die JS-Animation zu ermöglichen */
+        }
+
+        body {
+            margin: 0;
+            background-color: black;
+            color: #EEEEEE;
+            /* Standard-Schriftart für die Seite (wird vom Menü überschrieben) */
+            font-family: 'Poppins', sans-serif;
+            overscroll-behavior: none;
+            /* NEU: Verhindert jegliches horizontales Scrollen */
+            overflow-x: hidden;
+        }
+
+        * {
+            /* Stellt sicher, dass padding und border in der Gesamtgröße von Elementen enthalten sind */
+            box-sizing: border-box;
+        }
+
+        /* --- Navigation / Menü --- */
+        nav {
+            position: fixed;
+            top: 25px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            /* GEÄNDERT: Vertikale Stapelung der Menüpunkte */
+            flex-direction: column;
+            /* NEU: Rechtsbündige Ausrichtung der Menüpunkte */
+            align-items: flex-end;
+            gap: 12px; /* Abstand zwischen den Menüpunkten */
+        }
+
+        nav li a {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            text-decoration: none;
+            color: #EEEEEE;
+            padding: 8px 14px;
+            border-radius: 6px;
+            display: block;
+            /* Übergang für sanfte Hover-Effekte */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Spezialfall: "andreas.icu" ist immer weiß hinterlegt */
+        nav li a.nav-andreas {
+            background-color: white;
+            color: black;
+        }
+
+        /* Aktiver Status (wird per JS gesetzt) für alle Links AUSSER "andreas" */
+        nav li a.active {
+            color: #1A0094;
+            /* Wir setzen den Hintergrund nicht, damit der Hover-Effekt Vorrang hat, 
+               aber die Schriftfarbe zeigt den aktiven Status an. */
+        }
+
+        /* Hover-Effekt für alle Links (MUSS NACH .active stehen, um auf aktiven Links zu greifen) */
+        nav li a:hover {
+            background-color: #1A0094;
+            color: black;
+        }
+
+        /* --- Seiten-Sektionen --- */
+        .full-page {
+            height: 100vh; /* Jede Sektion füllt den gesamten sichtbaren Bereich */
+            width: 100%;
+            position: relative;
+            /* Behält 'visible', damit die Buchstaben vertikal über die Sektionen ragen können */
+            overflow: visible;
+            
+            /* Zentriert den (zukünftigen) Inhalt */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* NEUE LAYOUT-STRUKTUR FÜR SAY-HI
+           Verwendet Grid, um den Haupt-Container (.contact-area) zu zentrieren.
+        */
+        #say-hi {
+            display: grid; 
+            place-items: center; /* Zentriert den Inhalt (contact-area) */
+            position: relative; 
+        }
+
+        /* 1. Sektion: Andreas (als Bezugspunkt für den absolut positionierten Text) */
+        #andreas {
+            position: relative; /* Wichtig für absolute Kinder wie den Text */
+        }
+
+        /* --- Background-Letters (Allgemein) --- */
+        .background-letter {
+            font-family: 'Baskervville', serif;
+            /* HINWEIS: Baskervville hat kein 600. 700 (Bold) ist am nächsten an "SemiBold 600" */
+            font-weight: 700;
+            color: #323232;
+            position: absolute;
+            z-index: -1; /* Liegt hinter dem Inhalt */
+            user-select: none; /* Kann nicht markiert werden */
+            
+            /* Startzustand: Unsichtbar (wird per JS auf den Ratio-Wert gesetzt) */
+            opacity: 0;
+            /* KEINE transition hier, da die Opazität direkt per JS-Ratio gesetzt wird */
+        }
+
+        /* --- Background-Letters (Individuelle Positionen) --- */
+
+        /* 1. "A" für Sektion "andreas" */
+        #bg-a {
+            font-size: 120vh; /* 120vh der Viewport-Höhe */
+            bottom: 0; /* NEU: Liegt unten auf */
+            right: 0;
+            /* Verschiebt das Element um 50% seiner EIGENEN Breite nach rechts (ragt 50% raus) */
+            transform: translateX(38%);
+            line-height: 0.8; /* NEU: Hilft, dass der Buchstabe wirklich am Boden "sitzt" */
+        }
+
+        /* 2. "R" für Sektion "recent" */
+        #bg-r {
+            font-size: 120vh; /* 120% der Viewport-Höhe */
+            bottom: 0; /* Liegt unten auf */
+            left: 0;
+            /* Verschiebt das Element um 30% nach links */
+            transform: translateX(-35%);
+            line-height: 0.8; /* Hilft, dass der Buchstabe wirklich am Boden "sitzt" */
+        }
+
+        /* 3. "HI" für Sektion "say-hi" */
+        #bg-hi {
+            font-size: 50vw; /* 50% der Viewport-Breite */
+            top: 0; /* Liegt oben auf */
+            left: 50%; /* Horizontal zentrieren (Startpunkt) */
+            /* Verschiebt um 50% nach oben (raus) UND 50% nach links (zur Zentrierung) */
+            transform: translateY(-47%) translateX(-50%);
+            width: 100%;
+            text-align: center;
+        }
+
+        /* --- Kreisförmiger Text (Animation) --- */
+        .circular-text-container {
+            /* Definierte Größe des Kreises für die JS-Berechnung */
+            width: 280px; 
+            height: 280px; 
+            
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            
+            /* Text-Styling des Containers */
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600; 
+            font-style: italic; 
+            font-size: 16px;
+            color: #EEEEEE; 
+            z-index: 5; /* Liegt über dem A-Hintergrund und Content-Layern */
+            letter-spacing: 0px;
+            
+            animation: rotateText 30s linear infinite;
+        }
+
+        .circular-text-container span {
+            display: inline-block;
+            position: absolute;
+            top: 50%; 
+            left: 50%; 
+            transform-origin: 0 0;
+        }
+        
+        @keyframes rotateText {
+            from {
+                /* Positionierung: -40% verschiebt den Kreismittelpunkt nach oben/links aus dem Bild */
+                transform: translate(-40%, -40%) rotate(0deg); 
+            }
+            to {
+                transform: translate(-40%, -40%) rotate(360deg);
+            }
+        }
+        
+        /* --- Dynamische Inhaltsebenen (Content Layers) --- */
+        
+        /* Basis-Stil für alle Wrapper (die an der %-Position verankert sind) */
+        .content-layer-wrapper {
+            position: absolute;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700; /* Bold */
+            color: white;
+            white-space: nowrap; 
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); 
+            /* Z-Index unter dem rotierenden Text (5) */
+            z-index: 2; 
+            
+            /* Verschiebt den Ankerpunkt des Elements, damit die %-Werte die Mitte des Textes treffen */
+            transform: translate(-50%, -50%); 
+        }
+
+        /* Stil für die einzelnen Buchstaben, die transformiert werden */
+        .content-char {
+            display: inline-block; /* Für individuelle Transformation und Rotation */
+            /* Sanfter Übergang für die Transformationen. 0.0s für Transform, damit es direkt dem Scroll-Wert folgt */
+            transition: transform 0.0s, filter 0.3s, opacity 0.3s;
+        }
+
+        /* --- SAY HI Layout und Formular-Styling --- */
+        
+        /* Container, der alle Elemente im Say Hi Bereich vertikal zentriert */
+        .contact-area {
+            position: relative; 
+            width: 100%; /* NEU: Nimmt die volle Breite ein, um die Kinder (Text, Unit) zu zentrieren */
+            
+            /* Stellt das vertikale Layout für h2, p, und video-form-unit sicher */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Zentriert alle Kinder: h2, p, video-form-unit */
+            gap: 30px; 
+            text-align: center;
+        }
+
+        /* H2 und P sind jetzt direkte Kinder von .contact-area */
+        .contact-title {
+            font-size: 2.5rem; 
+            margin: 0;
+        }
+        
+        /* GEÄNDERT: Alte Klasse .contact-tagline wird entfernt, da der Text umgezogen ist */
+
+        /* NEU: Klasse für den Text innerhalb der Formularbox */
+        .form-tagline {
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+        
+        /* NEU: Container für das überlappende Video/Formular-Element (mit fester Breite) */
+        .video-form-unit {
+            position: relative; /* Wichtig für die absolute Positionierung der Formularbox */
+            width: 450px; /* Definiert die Breite des überlappenden Blocks */
+            /* GEÄNDERT: Mindesthöhe erhöht, um flexibles Formular zu halten (550px) */
+            min-height: 550px; 
+            
+            /* Stellt sicher, dass das Video in seiner Mitte zentriert ist */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Stellt das Video oben im Container sicher */
+        }
+
+
+        /* Video-Stil */
+        .circular-video {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover; 
+            border: 3px solid #878787;
+            transition: border-color 0.3s ease; 
+            z-index: 3; /* Liegt über der Formularbox */
+            position: relative; /* Erstellt einen Stacking Context, damit z-index wirkt */
+        }
+        
+        /* Formularbox-Stil */
+        .contact-form-box {
+            position: absolute;
+            z-index: 1; /* Liegt hinter dem Video (z-index 3) */
+            background: #323232;
+            width: 450px; 
+            /* GEÄNDERT: Höhe auf 'auto' gesetzt, um Expansion zu ermöglichen */
+            height: auto; 
+            /* NEU: Mindesthöhe, um das Layout auf Desktop stabil zu halten */
+            min-height: 425px; 
+            
+            /* GEÄNDERT: Unifizierung auf 15% (steilere Dachform) für Desktop und Mobile */
+            clip-path: polygon(50% 0%, 100% 25%, 100% 100%, 0% 100%, 0% 25%);
+            border-radius: 12px; 
+            
+            padding: 30px; /* Basis-Padding für links/rechts/unten */
+            /* GEÄNDERT: Padding oben leicht reduziert, aber noch groß genug */
+            padding-top: 100px; 
+            
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Leichter Schatten für Tiefe */
+
+            /* DESKTOP FIX: Positioniert die obere Kante der Box 75px unter dem Video-Startpunkt. */
+            top: 75px; 
+            left: 0; 
+            
+            transform: none; 
+        }
+
+        .contact-form-box form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .contact-form-box input,
+        .contact-form-box textarea {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.1); 
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            outline: none; /* Entfernt den blauen Fokus-Rand */
+            transition: background-color 0.3s ease;
+        }
+        
+        .contact-form-box input:focus,
+        .contact-form-box textarea:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .contact-form-box textarea {
+            resize: none;
+            height: 100px;
+        }
+
+        .contact-form-box input::placeholder,
+        .contact-form-box textarea::placeholder {
+            color: #DDDDDD; 
+            opacity: 0.8;
+        }
+
+        .contact-form-box button {
+            background-color: #1A0094; 
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .contact-form-box button:hover {
+            background-color: #3f00e0;
+        }
+        
+        /* --- Footer --- */
+        #footer {
+            height: 40vh; /* Kürzere Höhe als die full-page Sektionen */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #footer p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            opacity: 0.5;
+        }
+        
+        /* --- Responsive Design für Mobilgeräte --- */
+        @media (max-width: 768px) {
+            nav {
+                top: 15px;
+                right: 15px;
+            }
+            
+            nav ul {
+                /* Leichter Hintergrund, damit es lesbar bleibt */
+                background-color: rgba(0, 0, 0, 0.5);
+                padding: 10px;
+                border-radius: 6px;
+            }
+
+            nav li a {
+                padding: 6px 10px;
+            }
+
+            /* Anpassung der Platzierung der Layers auf Mobilgeräten, falls nötig */
+            .content-layer-wrapper {
+                /* Kleinere Verschiebung für responsive Zentrierung */
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            
+            /* Spezielle Anpassung für die Say Hi Sektion auf Mobilgeräten */
+            .contact-area {
+                width: 90%; /* Nimmt 90% der Breite ein */
+                /* FIX: Fügt oben Platz hinzu, damit der Inhalt nicht vom Formular verdeckt wird */
+                padding-top: 100px; 
+            }
+
+            .video-form-unit {
+                width: 100%; /* Passt sich der 90% Breite des .contact-area an */
+                display: block; /* Entfernt Flexbox, um normalen Flow zu ermöglichen */
+                min-height: 0; /* Auf Mobilgeräten wird die Höhe dynamisch bestimmt */
+            }
+
+            .circular-video {
+                 margin-bottom: 0; 
+                 /* Video zentrieren, da es kein Flexbox-Child mehr ist */
+                 margin-left: auto;
+                 margin-right: auto;
+                 display: block; 
+            }
+            
+            .contact-form-box {
+                width: 100%; /* Die Formularbox füllt den .contact-area */
+                height: auto; /* Höhe passt sich dem Inhalt an */
+                
+                /* FIX: Wechsel auf normalen Dokumentenfluss */
+                position: relative; 
+                top: auto;
+                left: auto;
+                transform: none;
+                z-index: 1; 
+                
+                /* Simuliert die Überlappung, indem die Box hochgezogen wird (halbe Video-Höhe) */
+                margin-top: -75px; 
+                
+                /* UNVERÄNDERT: Steilere Dachform und abgerundete Ecken für Mobilgeräte */
+                clip-path: polygon(50% 15%, 100% 15%, 100% 100%, 0% 100%, 0% 15%);
+                border-radius: 12px;
+                
+                padding: 20px; /* Basis-Padding für Seiten und unten */
+                /* GEÄNDERT: Padding oben erhöht für steileres Dach */
+                padding-top: 100px; 
+            }
+            
+            .contact-area {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Das Menü in der oberen rechten Ecke --><nav>
+        <ul>
+            <li><a href="#andreas" class="nav-andreas">andreas.icu</a></li>
+            <li><a href="#recent">Recent</a></li>
+            <li><a href="#say-hi">Say Hi</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hauptinhalt mit den drei Sektionen --><main>
+        <!-- 1. Sektion: Andreas --><section id="andreas" class="full-page">
+            <div class="background-letter" id="bg-a">A</div>
+            
+            <!-- Kreisförmiger Text Container --><div id="circular-text" class="circular-text-container">
+                <!-- Text wird hier von JS eingefügt --></div>
+
+            <!-- Container für die per JS erstellten, scroll-animierten Inhaltsebenen -->
+            <div id="content-layers-container"></div>
+
+        </section>
+
+        <!-- 2. Sektion: Recent --><section id="recent" class="full-page">
+            <div class="background-letter" id="bg-r">R</div>
+            <!-- Hintergrundbild --><div id="recent-bg-image" class="recent-media"></div>
+            <!-- Vordergrundbild --><div id="recent-fg-image" class="recent-media">
+                <img src="https://placehold.co/400x300/1A0094/FFFFFF?text=Recent+Foreground" 
+                     alt="Placeholder Vordergrundbild für Recent Sektion">
+            </div>
+        </section>
+
+        <!-- 3. Sektion: Say Hi --><section id="say-hi" class="full-page">
+            <div class="background-letter" id="bg-hi">HI</div>
+            
+            <!-- CONTACT-AREA CONTAINER - jetzt für die vertikale Stapelung und horizontale Zentrierung der Hauptblöcke -->
+            <div class="contact-area">
+                
+                <!-- Text Elemente (Jetzt direkt Kinder von .contact-area) -->
+                <h2 class="contact-title">Let's talk.</h2>
+                
+                <!-- NEUER CONTAINER: Video/Formular Einheit für Überlappung und Zentrierung -->
+                <div class="video-form-unit">
+                    
+                    <!-- Eingebettetes Video --><video id="sayHiVideo" 
+                           class="circular-video" 
+                           src="https://cdn.midjourney.com/video/939419fb-dac4-4f5c-97b6-34719f0b38f1/0.mp4" 
+                           autoplay 
+                           loop 
+                           muted 
+                           playsinline></video>
+                           
+                    <!-- Formular Box -->
+                    <div class="contact-form-box">
+                        <form>
+                            <input type="text" placeholder="Subject" required>
+                            <input type="text" placeholder="Name" required>
+                            <input type="email" placeholder="M@il" required>
+                            <textarea placeholder="Text" required></textarea>
+                            <!-- NEU: Tagline innerhalb des Formulars positioniert - JETZT VOR DEM BUTTON -->
+                            <p class="form-tagline">Ready to create something great together?</p>
+                            <!-- Der Button ist jetzt nach der Tagline, am Ende des Formulars -->
+                            <button type="submit">Send</button>
+                        </form>
+                    </div>
+                
+                </div>
+                <!-- ENDE video-form-unit -->
+                
+            </div>
+            <!-- ENDE CONTACT-AREA CONTAINER -->
+            
+        </section>
+        
+        <!-- 4. Sektion: Footer -->
+        <section id="footer">
+            <p>© 2024 andreas.icu - Made with Passion.</p>
+            <p>Imprint | Privacy Policy</p>
+        </section>
+    </main>
+
+    <script>
+        // Daten für die dynamischen Layer (mit den ursprünglich gewünschten Positionen)
+        const layerData = [
+            // { text, x(%), y(%), size(px), blur(px), zIndex }
+            { text: 'Mediacreator', x: 40, y: 40, size: 40, blur: 0, z: 5 },
+            { text: 'UI/UX Designer', x: 60, y: 60, size: 36, blur: 0.5, z: 4 }, // Blur 0.5px
+            { text: 'Learning & Development Trainer', x: 40, y: 50, size: 32, blur: 1, z: 3 }, // Blur 1px
+            { text: 'Dreamer & Realist', x: 35, y: 70, size: 28, blur: 1.5, z: 2 }, // Blur 1.5px
+            { text: 'Multi-interested', x: 60, y: 25, size: 24, blur: 2, z: 1 } // Blur 2px
+        ];
+
+        // Funktion zur Erstellung des kreisförmigen Textes (unverändert)
+        function createCircularText(elementId, text) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+
+            container.innerHTML = ''; 
+            const chars = text.split('');
+            const totalChars = chars.length;
+            const anglePerChar = - (360 / totalChars); 
+            const radius = 140; // 280px / 2 
+
+            chars.forEach((char, index) => {
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char; 
+                
+                const charAngleDeg = 90 + (index * anglePerChar); 
+                const angleRad = charAngleDeg * (Math.PI / 180); 
+
+                const x = radius * Math.cos(angleRad);
+                const y = radius * Math.sin(angleRad);
+                
+                const rotationToCenter = charAngleDeg + 90 + 180; 
+
+                const transform = `
+                    translate(${x}px, ${y}px) 
+                    rotate(${rotationToCenter}deg) 
+                    translateX(-50%)
+                `;
+                
+                span.style.transform = transform;
+                container.appendChild(span);
+            });
+        }
+
+        // Hilfsfunktion für deterministische "Zufallszahlen" basierend auf einem Seed
+        const rand = (s) => {
+            let x = Math.sin(s) * 10000;
+            return x - Math.floor(x);
+        };
+        
+        // Funktion zur Erstellung der scroll-animierten Content Layers (jetzt auf Zeichen-Basis)
+        function setupContentLayers(data, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            let globalCharIndex = 0;
+
+            data.forEach((layer, layerIndex) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'content-layer-wrapper';
+                wrapper.style.left = `${layer.x}%`;
+                wrapper.style.top = `${layer.y}%`;
+                // Z-Index: 5 (circular-text) > 2-6 (layers) > -1 ('A')
+                wrapper.style.zIndex = layer.z + 1; 
+
+                const chars = layer.text.split(''); // Split in einzelne Buchstaben
+                
+                chars.forEach((char, index) => {
+                    const charSpan = document.createElement('span');
+                    charSpan.className = 'content-char';
+                    charSpan.textContent = char === ' ' ? '\u00A0' : char; // Leerzeichen als non-breaking space
+                    
+                    // Ein eindeutiger Seed für die Berechnung der Flugbahn
+                    const seed = (layerIndex * 1000) + index;
+                    charSpan.dataset.seed = seed;
+                    
+                    // Statische Layer-Stile
+                    charSpan.style.fontSize = `${layer.size}px`;
+                    charSpan.style.filter = `blur(${layer.blur}px)`;
+                    
+                    wrapper.appendChild(charSpan);
+                    globalCharIndex++;
+                });
+
+                container.appendChild(wrapper);
+            });
+        }
+
+        /**
+         * Führt ein sanftes Scrollen zu einer bestimmten Y-Koordinate durch.
+         * @param {number} targetY - Die Ziel-Y-Position (in Pixeln).
+         * @param {number} duration - Die Dauer der Animation in Millisekunden.
+         */
+        function smoothScrollTo(targetY, duration) {
+            const startY = window.scrollY;
+            const distanceY = targetY - startY;
+            let startTime = null;
+
+            // Easing function (ease-in-out Cubic)
+            const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+            function step(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(1, timeElapsed / duration);
+                const easedProgress = easeInOutCubic(progress);
+
+                window.scrollTo(0, startY + distanceY * easedProgress);
+
+                // Führe den nächsten Schritt nur aus, wenn die Animation noch nicht beendet ist
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            }
+            
+            window.requestAnimationFrame(step);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Initialisiere die dynamischen Elemente
+            createCircularText('circular-text', 'DIGITAL PLAYGROUND OF ANDREAS MAYER • ');
+            setupContentLayers(layerData, 'content-layers-container');
+
+            const sections = document.querySelectorAll('.full-page');
+            const navLinks = document.querySelectorAll('nav a');
+            
+            // Füge den Custom Scroll Handler zu den Navigationslinks hinzu
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault(); // Verhindert das sofortige Springen (Standardverhalten)
+                    
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+
+                    if (targetElement) {
+                        const targetPosition = targetElement.offsetTop;
+                        // Setze die Dauer auf 1200ms (1.2 Sekunden) für langsames Scrollen
+                        const scrollDuration = 1200; 
+                        smoothScrollTo(targetPosition, scrollDuration);
+                    }
+                });
+            });
+
+            // LOGIK FÜR VIDEO-HOVER (Pause/Play)
+            const sayHiVideo = document.getElementById('sayHiVideo');
+            
+            if (sayHiVideo) {
+                // Pause Video on Mouse Over (wenn der Mauszeiger drüberfährt)
+                sayHiVideo.addEventListener('mouseover', () => {
+                    sayHiVideo.pause();
+                });
+
+                // Play Video on Mouse Out (wenn der Mauszeiger wegfährt)
+                sayHiVideo.addEventListener('mouseout', () => {
+                    // Startet die Wiedergabe nur, wenn sie pausiert ist
+                    if (sayHiVideo.paused) {
+                        // Da `autoplay` und `loop` gesetzt sind, sollte `play()` immer funktionieren
+                        sayHiVideo.play().catch(error => {
+                            // Fehlerbehandlung für den Fall, dass die Wiedergabe durch den Browser blockiert wird
+                            console.error("Video-Wiedergabe fehlgeschlagen beim Mouseout:", error);
+                        });
+                    }
+                });
+            }
+
+
+            // Erzeugt ein Array von 0 bis 1 in 0.01er-Schritten (101 Stufen)
+            const thresholds = Array.from(Array(101).keys(), i => i / 100);
+
+            // Optionen für den Intersection Observer:
+            const observerOptions = {
+                root: null, // Beobachtet den Viewport
+                threshold: thresholds 
+            };
+
+            // Die Callback-Funktion
+            const observerCallback = (entries, observer) => {
+                entries.forEach(entry => {
+                    const targetSection = entry.target;
+                    const bgLetter = targetSection.querySelector('.background-letter');
+                    const navLink = document.querySelector(`nav a[href="#${targetSection.id}"]`);
+
+                    // 1. LOGIK FÜR LETTER OPACITY:
+                    if (bgLetter) {
+                        bgLetter.style.opacity = entry.intersectionRatio;
+                    }
+                    
+                    // 2. LOGIK FÜR MENÜ:
+                    // Verhindert, dass der Link "andreas.icu" den "active" Status erhält
+                    if (entry.intersectionRatio >= 0.5) { 
+                        navLinks.forEach(link => link.classList.remove('active'));
+                        
+                        if (navLink && !navLink.classList.contains('nav-andreas')) {
+                            navLink.classList.add('active');
+                        }
+                    }
+
+                    // 3. SCROLL-EFFEKT FÜR ANDREAS SECTION (Zeichen-Animation)
+                    if (targetSection.id === 'andreas') {
+                        // Der Scroll-Fortschritt (0: oben, 1: unten)
+                        const scrollProgress = 1 - entry.intersectionRatio; 
+                        const startThreshold = 0.1; // Effekt beginnt ab 10% gescrollt
+                        
+                        let animationProgress = 0;
+
+                        if (scrollProgress >= startThreshold) {
+                            // Remapping: (aktuell - Start) / (Gesamtbereich) -> skaliert von 0 bis 1
+                            animationProgress = (scrollProgress - startThreshold) / (1 - startThreshold);
+                        }
+                        
+                        const chars = targetSection.querySelectorAll('.content-char');
+                        
+                        chars.forEach((char) => {
+                            const seed = parseInt(char.dataset.seed);
+                            
+                            // Deterministic random values for unique movement per character
+                            // Rnd 1: Y-Speed multiplier (0.5 to 1.5)
+                            const ySpeedMult = 0.5 + rand(seed + 1) * 1.0; 
+                            // Rnd 2: X-Direction and Speed (-1.0 to 1.0)
+                            const xDirection = -1 + rand(seed + 2) * 2.0; 
+                            // Rnd 3: Rotation speed and direction (-1.0 to 1.0)
+                            const rotDirection = -1 + rand(seed + 3) * 2.0; 
+                            
+                            // Multiplikatoren für den maximalen Effekt
+                            const translateY_max = 2000; // Fliegt bis zu 2000px nach oben
+                            const translateX_max = 800;  // Streut bis zu 800px horizontal
+                            const rotation_max = 1440;  // Rotiert bis zu 4 volle Umdrehungen
+                            
+                            // Anwendung der Transformation, wobei animationProgress verwendet wird
+                            const newY = -(animationProgress * translateY_max * ySpeedMult);
+                            const newX = animationProgress * translateX_max * xDirection;
+                            const newRot = animationProgress * rotation_max * rotDirection;
+
+                            const transform = `
+                                translate(${newX}px, ${newY}px) 
+                                rotate(${newRot}deg)
+                            `;
+                            
+                            char.style.transform = transform;
+                            // Blendet schneller aus, wenn es nach unten scrollt
+                            char.style.opacity = Math.max(0, 1 - animationProgress * 3.0); 
+                        });
+                    }
+                });
+            };
+
+            // Den Observer erstellen und alle Sektionen beobachten
+            // ACHTUNG: Der Footer wird nicht mit 'full-page' beobachtet, da er nicht 100vh hoch ist.
+            const observer = new IntersectionObserver(observerCallback, observerOptions);
+            sections.forEach(section => observer.observe(section));
+        });
+    </script>
+
+</body>
+</html>
